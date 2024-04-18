@@ -23,13 +23,25 @@ pub struct Cli {
     count: bool,
 }
 impl Cli {
-    // TODO:
+    pub fn in_file(&self) -> &str {
+        &self.in_file
+    }
+    pub fn out_file(&self) -> Option<&str> {
+        self.out_file.as_deref()
+    }
+    pub fn count(&self) -> bool {
+        self.count
+    }
 }
 
 pub fn run(cli: Cli) -> Result<()> {
-    // TODO:
-    // match ReadBuffer::of()
-    println!("{:?}", cli);
+    match ReadBuffer::of(cli.in_file()) {
+        Ok(read_buffer) => {
+            // TODO:
+            println!("{:?}", cli);
+        }
+        Err(error) => eprintln!("{}: {}", cli.in_file(), error),
+    }
     Ok(())
 }
 
