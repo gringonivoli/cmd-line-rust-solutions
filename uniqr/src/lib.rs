@@ -36,15 +36,30 @@ impl Cli {
 
 pub fn run(cli: Cli) -> Result<()> {
     match ReadBuffer::of(cli.in_file()) {
-        Ok(read_buffer) => {
-            // TODO:
-            println!("{:?}", cli);
+        Ok(mut read_buffer) => {
+            let mut line = String::new();
+            loop {
+                let bytes = read_buffer.read_line(&mut line)?;
+                if bytes.is_zero() {
+                    break;
+                }
+            }
+            print!("{}", line);
+            line.clear();
         }
         Err(error) => eprintln!("{}: {}", cli.in_file(), error),
     }
     Ok(())
 }
 
+struct ReadBytes {
+    raw_bytes: usize,
+}
+impl ReadBytes {
+    pub fn is_zero(&self) -> bool {
+        self.raw_bytes == 0
+    }
+}
 struct ReadBuffer {
     raw_buffer: Box<dyn BufRead>,
 }
@@ -58,7 +73,9 @@ impl ReadBuffer {
         })
     }
 
-    pub fn read_line(&mut self, a_string_to_write: &mut String) -> Result<usize> {
-        Ok(self.raw_buffer.read_line(a_string_to_write)?)
+    pub fn read_line(&mut self, a_string_to_write: &mut String) -> Result<ReadBytes> {
+        Ok(ReadBytes {
+            raw_bytes: self.raw_buffer.read_line(a_string_to_write)?,
+        })
     }
 }
