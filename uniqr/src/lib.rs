@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{self, BufRead, BufReader},
+    io::{self, BufRead, BufReader, Write},
 };
 
 use anyhow::Result;
@@ -43,8 +43,19 @@ pub fn run(cli: Cli) -> Result<()> {
                 if bytes.is_zero() {
                     break;
                 }
+                let result = if cli.count() {
+                    format!("{:4} {}", 1, line)
+                } else {
+                    line.to_string()
+                };
+
+                if let Some(out_filename) = cli.out_file() {
+                    let mut out_file = File::create(out_filename)?;
+                    out_file.write_all(result.as_bytes())?;
+                } else {
+                    print!("{}", result);
+                }
             }
-            print!("{}", line);
             line.clear();
         }
         Err(error) => eprintln!("{}: {}", cli.in_file(), error),
